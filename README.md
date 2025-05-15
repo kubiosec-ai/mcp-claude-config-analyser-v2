@@ -20,12 +20,21 @@ This project provides tools for extracting, formatting, and analyzing MCP (Model
    git clone https://github.com/kubiosec-ai/mcp-claude-config-analyser-v2.git
    cd mcp-claude-config-analyser-v2
    ```
-
-2. Install required dependencies:
+2. Create a python environment
+   ```
+   python3 -m venv .venv
+   ```
+   ```
+   source .venv/bin/activate
+   ```
+3. Install required dependencies:
    ```bash
    pip install mcp-python-client openai
    ```
-
+4. Set OpenAI API key
+   ```
+   export OPENAI_API_KEY=xxxxxxxxxxx
+   ```
 ## Usage
 
 ### 1. Extract Tool Information from MCP Servers
