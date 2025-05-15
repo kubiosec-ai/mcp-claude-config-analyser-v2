@@ -28,7 +28,7 @@ import json
 import argparse
 import csv
 import os
-from typing import List, Dict, Any, Tuple, NamedTuple
+from typing import List, Dict, Any, Tuple, NamedTuple, Optional
 
 
 class ToolInfo(NamedTuple):
@@ -38,12 +38,13 @@ class ToolInfo(NamedTuple):
     description: str
 
 
-def extract_server_tools(config_path: str) -> List[ToolInfo]:
+def extract_server_tools(config_path: str, set_env_vars: bool = True) -> List[ToolInfo]:
     """
     Extract server names, tool names, and descriptions from the config file.
     
     Args:
         config_path: Path to the config.json file
+        set_env_vars: If True, set environment variables from the config
         
     Returns:
         List of ToolInfo objects containing server_name, tool_name, and description
@@ -55,23 +56,52 @@ def extract_server_tools(config_path: str) -> List[ToolInfo]:
     # Extract server and tool information
     server_tools = []
     
-    # Check if this is the original config file or our processed file
-    if "mcpServers" in config:
-        # Original config file format
-        for server_name, server_config in config.get("mcpServers", {}).items():
-            # We don't have tool information in the original config
-            # Just add the server name with an empty tool name and description
-            server_tools.append(ToolInfo(server_name, "", ""))
-    else:
-        # Our processed config file format
-        for server in config.get("servers", []):
-            server_name = server.get("server_name", "unknown")
-            for tool in server.get("tools", []):
-                tool_name = tool.get("name", "unknown")
-                description = tool.get("description", "")
-                server_tools.append(ToolInfo(server_name, tool_name, description))
+    # Store original environment variables to restore later
+    original_env = {}
     
-    return server_tools
+    try:
+        # Check if this is the original config file or our processed file
+        if "mcpServers" in config:
+            # Original config file format
+            for server_name, server_config in config.get("mcpServers", {}).items():
+                # Set environment variables if requested
+                if set_env_vars and "env" in server_config:
+                    for key, value in server_config.get("env", {}).items():
+                        original_env[key] = os.environ.get(key)
+                        os.environ[key] = value
+                        print(f"Set environment variable: {key}={value}")
+                
+                # We don't have tool information in the original config
+                # Just add the server name with an empty tool name and description
+                server_tools.append(ToolInfo(server_name, "", ""))
+        else:
+            # Our processed config file format
+            for server in config.get("servers", []):
+                server_name = server.get("server_name", "unknown")
+                
+                # Set environment variables if requested
+                if set_env_vars and "env" in server:
+                    for key, value in server.get("env", {}).items():
+                        original_env[key] = os.environ.get(key)
+                        os.environ[key] = value
+                        print(f"Set environment variable: {key}={value}")
+                
+                for tool in server.get("tools", []):
+                    tool_name = tool.get("name", "unknown")
+                    description = tool.get("description", "")
+                    server_tools.append(ToolInfo(server_name, tool_name, description))
+        
+        return server_tools
+    
+    finally:
+        # Restore original environment variables
+        if set_env_vars:
+            for key, value in original_env.items():
+                if value is None:
+                    if key in os.environ:
+                        del os.environ[key]
+                else:
+                    os.environ[key] = value
 
 
 def save_as_csv(server_tools: List[ToolInfo], output_path: str) -> None:
@@ -112,16 +142,18 @@ def save_as_json(server_tools: List[ToolInfo], output_path: str, reporter_format
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Extract tool names from MCP server config')
-    parser.add_argument('--config', type=str, default='config.json', 
+    parser.add_argument('--config', type=str, default='config.json',
                         help='Path to the config file (default: config.json)')
     parser.add_argument('--output', type=str, default='tool_list.json',
                         help='Path to the output file (default: tool_list.json)')
     parser.add_argument('--format', type=str, choices=['json', 'csv', 'reporter'], default='json',
                         help='Output format (default: json, reporter for reporter.py compatibility)')
+    parser.add_argument('--no-env', action='store_true',
+                        help='Do not set environment variables from the config')
     args = parser.parse_args()
     
     # Extract server and tool names
-    server_tools = extract_server_tools(args.config)
+    server_tools = extract_server_tools(args.config, not args.no_env)
     
     # Save to the specified format
     if args.format == 'csv':
