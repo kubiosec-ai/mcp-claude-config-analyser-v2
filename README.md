@@ -29,8 +29,7 @@ This project provides tools for extracting, formatting, and analyzing MCP (Model
    ```
 3. Install required dependencies:
    ```bash
-   pip install mcp-python-client openai
-   ```
+   pip install -r requirements.txt
 4. Set OpenAI API key
    ```
    export OPENAI_API_KEY=xxxxxxxxxxx
