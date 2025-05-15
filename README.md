@@ -147,7 +147,17 @@ playwright,browser_close,Close the page
 ```
 
 ## Common Workflows
+### Default 
+```
+# Extract tools from all servers
+python analyser.py --timeout 30
 
+# Format tools 
+python extract_tools.py --output tool_list.json
+
+# Analyze tool descriptions
+python reporter.py tool_list.json
+```
 ### Extract and Analyze All Tools
 
 ```bash
