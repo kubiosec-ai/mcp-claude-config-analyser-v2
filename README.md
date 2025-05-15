@@ -1,4 +1,4 @@
-# Claude anthropic MCP Servers Tool Analyzer
+# Claude Anthropic MCP Servers Tool Analyzer
 
 This project provides tools for extracting, formatting, and analyzing MCP (Model Context Protocol) server tools. It consists of three main components:
 
