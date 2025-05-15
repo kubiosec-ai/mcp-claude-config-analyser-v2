@@ -34,6 +34,10 @@ This project provides tools for extracting, formatting, and analyzing MCP (Model
    ```
    export OPENAI_API_KEY=xxxxxxxxxxx
    ```
+5. MAke a backup of your Claude Desktop Config file
+   ```
+   cp /Users/xxradar/Library/Application\ Support/Claude/claude_desktop_config ./claude_desktop_config
+   ```
 ## Usage
 
 ### 1. Extract Tool Information from MCP Servers
