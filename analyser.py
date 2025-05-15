@@ -52,7 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger("mcp-analyser")
 
 # Path to the config file
-CONFIG_PATH = "../mcp-claude-config-analyser/config.json"
+CONFIG_PATH = "/Users/xxradar/Library/Application Support/Claude/claude_desktop_config.json"
 # Output file path
 OUTPUT_PATH = "config.json"
 # Connection timeout in seconds
@@ -89,22 +89,35 @@ async def extract_tools_from_server(server_name: str, server_config: Dict[str, A
         logger.info(f"Dry run mode - skipping connection to {server_name}")
         return result
     
-    # Set environment variables
+    # Set environment variables before connecting to the server
     original_env = {}
     for key, value in env.items():
         original_env[key] = os.environ.get(key)
         os.environ[key] = value
+        logger.info(f"Set environment variable {key} for server {server_name}")
     
     try:
-        logger.info(f"Connecting to server: {server_name}")
-        server_params = StdioServerParameters(
-            command=command,
-            args=args
-        )
+        logger.info(f"Connecting to server: {server_name} with environment variables: {env}")
+        # Check if StdioServerParameters accepts env parameter
+        try:
+            server_params = StdioServerParameters(
+                command=command,
+                args=args,
+                env=os.environ.copy()  # Pass the current environment including our set variables
+            )
+        except TypeError:
+            # If env is not a valid parameter, fall back to the original approach
+            logger.info(f"StdioServerParameters does not accept env parameter, using process environment")
+            server_params = StdioServerParameters(
+                command=command,
+                args=args
+            )
         
         try:
             # Create a timeout for the connection
             async with asyncio.timeout(CONNECTION_TIMEOUT):
+                # Log environment variables for debugging
+                logger.info(f"Environment variables for {server_name}: {', '.join(f'{k}={v[:4]}***' for k, v in env.items())}")
                 async with stdio_client(server_params) as (read, write):
                     logger.info(f"Connected to {server_name}, initializing session")
                     async with ClientSession(read, write) as session:
