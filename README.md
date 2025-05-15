@@ -53,7 +53,7 @@ python analyser.py [options]
 - `--dry-run`: Parse config without connecting to servers
 - `--server SERVER`: Process only a specific server
 - `--timeout TIMEOUT`: Connection timeout in seconds (default: 30)
-- `--config CONFIG`: Path to Anthropic Claude config file
+- `--config CONFIG`: Path to Anthropic Claude config file (default: ./claude_desktop_config.json)
 - `--output OUTPUT`: Path to output file (default: config.json)
 
 #### Example:
