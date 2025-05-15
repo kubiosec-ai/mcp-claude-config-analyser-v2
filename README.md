@@ -17,8 +17,8 @@ This project provides tools for extracting, formatting, and analyzing MCP (Model
 
 1. Clone this repository:
    ```bash
-   git clone <repository-url>
-   cd mcp-tool-analyzer
+   git clone https://github.com/kubiosec-ai/mcp-claude-config-analyser-v2.git
+   cd mcp-claude-config-analyser-v2
    ```
 
 2. Install required dependencies:
