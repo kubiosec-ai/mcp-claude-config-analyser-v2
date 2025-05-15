@@ -107,7 +107,7 @@ python reporter.py <json-file>
 #### Example:
 
 ```bash
-python reporter.py reporter_tools.json
+python reporter.py tool_list.json
 ```
 
 ## Output Formats
