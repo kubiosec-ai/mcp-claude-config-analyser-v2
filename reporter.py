@@ -23,8 +23,20 @@ except json.JSONDecodeError:
     sys.exit(1)
 
 
-# Access the tools directly from the top level
-tools = data.get("tools", [])
+# Handle different JSON formats
+if isinstance(data, list):
+    # If data is a list, use it directly as the tools list
+    tools = data
+    # Convert to expected format with name and description
+    if len(tools) > 0 and "tool_name" in tools[0]:
+        tools = [{"name": tool.get("tool_name", ""), "description": tool.get("description", "")} for tool in tools]
+elif isinstance(data, dict) and "tools" in data:
+    # If data is a dict with a "tools" key, use that
+    tools = data.get("tools", [])
+else:
+    # Otherwise, use an empty list
+    tools = []
+    print("Warning: No tools found in the JSON file. Expected a list or a dict with a 'tools' key.")
 
 # System prompt that sets up the security audit agent
 system_prompt = """
