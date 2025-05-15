@@ -52,7 +52,7 @@ logging.basicConfig(
 logger = logging.getLogger("mcp-analyser")
 
 # Path to the config file
-CONFIG_PATH = "/Users/xxradar/Library/Application Support/Claude/claude_desktop_config.json"
+CONFIG_PATH = "./claude_desktop_config.json"
 # Output file path
 OUTPUT_PATH = "config.json"
 # Connection timeout in seconds
