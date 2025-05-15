@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""
+Extract tool names from MCP server config and create a flattened list.
+"""
+import json
+import argparse
+import csv
+import os
+from typing import List, Dict, Any, Tuple, NamedTuple
+
+
+class ToolInfo(NamedTuple):
+    """Information about a tool."""
+    server_name: str
+    tool_name: str
+    description: str
+
+
+def extract_server_tools(config_path: str) -> List[ToolInfo]:
+    """
+    Extract server names, tool names, and descriptions from the config file.
+    
+    Args:
+        config_path: Path to the config.json file
+        
+    Returns:
+        List of ToolInfo objects containing server_name, tool_name, and description
+    """
+    # Read the config file
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    
+    # Extract server and tool information
+    server_tools = []
+    
+    # Check if this is the original config file or our processed file
+    if "mcpServers" in config:
+        # Original config file format
+        for server_name, server_config in config.get("mcpServers", {}).items():
+            # We don't have tool information in the original config
+            # Just add the server name with an empty tool name and description
+            server_tools.append(ToolInfo(server_name, "", ""))
+    else:
+        # Our processed config file format
+        for server in config.get("servers", []):
+            server_name = server.get("server_name", "unknown")
+            for tool in server.get("tools", []):
+                tool_name = tool.get("name", "unknown")
+                description = tool.get("description", "")
+                server_tools.append(ToolInfo(server_name, tool_name, description))
+    
+    return server_tools
+
+
+def save_as_csv(server_tools: List[ToolInfo], output_path: str) -> None:
+    """
+    Save the server names, tool names, and descriptions as a CSV file.
+    
+    Args:
+        server_tools: List of ToolInfo objects
+        output_path: Path to save the CSV file
+    """
+    with open(output_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["server_name", "tool_name", "description"])
+        writer.writerows([(tool.server_name, tool.tool_name, tool.description) for tool in server_tools])
+
+
+def save_as_json(server_tools: List[ToolInfo], output_path: str, reporter_format: bool = False) -> None:
+    """
+    Save the server names, tool names, and descriptions as a JSON file.
+    
+    Args:
+        server_tools: List of ToolInfo objects
+        output_path: Path to save the JSON file
+        reporter_format: If True, format the output for the reporter.py script
+    """
+    if reporter_format:
+        # Format for reporter.py: {"tools": [{"name": "tool_name", "description": "actual description"}, ...]}
+        tools = [{"name": tool.tool_name, "description": tool.description or f"Server: {tool.server_name}"} for tool in server_tools]
+        output = {"tools": tools}
+    else:
+        # Original format: [{"server_name": "server", "tool_name": "tool", "description": "desc"}, ...]
+        output = [{"server_name": tool.server_name, "tool_name": tool.tool_name, "description": tool.description} for tool in server_tools]
+    
+    with open(output_path, 'w') as f:
+        json.dump(output, f, indent=2)
+
+
+def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Extract tool names from MCP server config')
+    parser.add_argument('--config', type=str, default='config.json', 
+                        help='Path to the config file (default: config.json)')
+    parser.add_argument('--output', type=str, default='tool_list.json',
+                        help='Path to the output file (default: tool_list.json)')
+    parser.add_argument('--format', type=str, choices=['json', 'csv', 'reporter'], default='json',
+                        help='Output format (default: json, reporter for reporter.py compatibility)')
+    args = parser.parse_args()
+    
+    # Extract server and tool names
+    server_tools = extract_server_tools(args.config)
+    
+    # Save to the specified format
+    if args.format == 'csv':
+        save_as_csv(server_tools, args.output)
+    elif args.format == 'reporter':
+        save_as_json(server_tools, args.output, reporter_format=True)
+    else:
+        save_as_json(server_tools, args.output)
+    
+    print(f"Extracted {len(server_tools)} server-tool pairs to {args.output}")
+
+
+if __name__ == "__main__":
+    main()
