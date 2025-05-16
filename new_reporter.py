@@ -22,7 +22,7 @@ class OverlappingFunctionality(BaseModel):
 
 class IssueCategory(BaseModel):
     description: str
-    affected_tools: Optional[List[str]] = None
+    affected_tools: List[str]
 
 class Recommendations(BaseModel):
     suggestions: List[str]
@@ -40,11 +40,22 @@ class StructuredAnalysis(BaseModel):
 system_prompt = """
 You are given a JSON blob where each object contains a tool name and its description.
 
-Your task is to analyze the tool descriptions and identify issues that could cause biased or incorrect tool selection by the LLM.
+These tools are available to an AI agent that selects one or more tools to solve user queries.
 
-You MUST return a valid JSON object
+Your task is to analyze the tool descriptions and identify any of the following issues that could cause biased or incorrect tool selection by the LLM:
 
-Do not include any explanation, comments, or text outside the JSON. Output only the JSON object.
+1. Overlapping functionality — tools that perform similar actions and may confuse the model
+2. Influencing or persuasive language — descriptions that subtly suggest preference or priority
+3. Crafted or informal tone — non-neutral wording such as second-person instructions or emotional framing
+4. Attention-seeking wording — descriptions using exaggeration or marketing-style language (e.g. "better", "use this if...")
+5. Predicted precedence — for each overlapping tool group, predict which tool the LLM would likely select and explain why (e.g. due to tone, specificity, keyword match)
+6. Inconsistency in tone or structure — descriptions that don’t follow a consistent, formal, objective style
+
+The goal is to prevent the LLM from taking unintended or suboptimal actions due to description bias.
+Provide a structured and reasoned analysis, grouped by issue type. Include recommendations where appropriate.
+Pay attention to Predicted precedence, as it is crucial for understanding how the LLM might prioritize tools.
+Identitfy which tools are most likely to be selected based on the descriptions provided if they are similar in nature
+The analysis should be clear and concise, with a focus on the potential impact of each issue on the LLM's decision-making process.
 """
 
 # === Construct prompt input ===
