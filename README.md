@@ -184,7 +184,13 @@ python analyser.py --server MCP_DOCKER
 # Format tools as CSV
 python extract_tools.py --format csv --output mcp_docker_tools.csv
 ```
-
+### Experimetal OpenAI SDK Agent
+```
+python extract_tools.py --format reporter --output reporter_tools.json
+```
+```
+python new_repoprter.py 
+```
 ## Troubleshooting
 
 ### Connection Issues

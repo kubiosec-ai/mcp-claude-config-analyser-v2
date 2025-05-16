@@ -1,2 +1,3 @@
 mcp-python-client 
 openai
+openai-agents
