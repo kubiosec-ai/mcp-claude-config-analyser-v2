@@ -189,7 +189,7 @@ python extract_tools.py --format csv --output mcp_docker_tools.csv
 python extract_tools.py --format reporter --output reporter_tools.json
 ```
 ```
-python new_repoprter.py 
+python new_reporter.py 
 ```
 ## Troubleshooting
 
